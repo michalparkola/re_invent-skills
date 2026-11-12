@@ -52,4 +52,4 @@ python3 -m unittest discover -s skills/re_invent-interview-analysis/tests
 
 #### Wersje
 
-Wersja to data wydania (`2026-11-12.5`). Historia zmian: [CHANGELOG.md](skills/re_invent-interview-analysis/CHANGELOG.md).
+Wersja to data wydania (`2026-11-12.6`). Historia zmian: [CHANGELOG.md](skills/re_invent-interview-analysis/CHANGELOG.md).

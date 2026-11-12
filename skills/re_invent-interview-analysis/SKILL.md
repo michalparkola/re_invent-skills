@@ -2,12 +2,12 @@
 name: re_invent-interview-analysis
 description: Turn a discovery interview transcript into a self-contained HTML report. The report has a transcript split into topic chunks, margin notes linked to exact quotes (jobs, pains, workarounds, signals; the interviewer's good moves, distortions and missed follow-ups), notes grouped by theme, and findings with hypotheses and next questions. The method draws on The Mom Test, Jobs to be Done and Clean Language. Use when the user asks to analyze, review or annotate a discovery interview, customer interview, user research call, sales discovery call or problem interview. Polish triggers include "przeanalizuj rozmowę", "analiza wywiadu" and "raport z rozmowy odkrywczej".
 metadata:
-  version: "2026-11-12.5"
+  version: "2026-11-12.6"
 ---
 
 # Discovery interview report
 
-Version 2026-11-12.5. See `CHANGELOG.md`.
+Version 2026-11-12.6. See `CHANGELOG.md`.
 
 The output is one self-contained HTML page with four tabs:
 
@@ -79,9 +79,9 @@ If you cannot write files at all, give the report as Markdown in the chat: summa
 
 ### 6. Edit pass on all generated copy
 Apply this to the headings, summaries, notes, groups and findings. Do not apply it to the transcript or the quotes. Check that:
-- There are no adverbs and no filler such as "warto zauważyć", "kluczowe", "w gruncie rzeczy", "it's worth noting" or "crucially".
+- There are no adverbs that add no fact: intensifiers, hedges and filler such as "naprawdę", "bardzo", "w zasadzie", "warto zauważyć", "kluczowe", "w gruncie rzeczy", "really", "it's worth noting" or "crucially". Keep words that carry a fact: time, frequency, amount or order ("co miesiąc", "około 30", "w lutym", "wcześniej").
 - There are no "not X but Y" contrasts. State Y.
-- Each sentence uses active voice with a person as the subject.
+- Sentences use active voice. A person is the subject where a person acts. A fact can be the subject when no one acts ("Ostatni JPK poszedł o 23:40"). Do not start each note with the same formula.
 - Each statement names the specific thing, number or episode. There are no vague declaratives.
 - There are no em dashes, no throat-clearing openers and no quotable one-liners.
 - Each heading states a conclusion that a reader can act on.

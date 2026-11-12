@@ -19,7 +19,7 @@ The build script enforces the speaker rule in the third column.
 
 The quote must be the interviewee's words. Never put a paraphrase by the interviewer in an evidence note: if the interviewee only agreed with the interviewer's framing ("tak, dokładnie"), that is weak evidence, and often a `play-distort` note on the interviewer's turn.
 
-In each evidence note, say how strong the evidence is. Strong: a specific past episode, a number, money or time spent, an action taken. Weak: an opinion, a generalization ("zawsze", "zwykle"), a hypothetical ("kupiłbym"), a compliment.
+In each evidence note, say how strong the evidence is. Vary the wording: name the fact that makes it strong or weak ("14 working days, a past episode") instead of a fixed formula such as "Jan gives strong evidence:". Strong: a specific past episode, a number, money or time spent, an action taken. Weak: an opinion, a generalization ("zawsze", "zwykle"), a hypothetical ("kupiłbym"), a compliment.
 
 ### job
 - JTBD frame: "Kiedy [sytuacja], chcę [postęp], żeby [rezultat]." Write the title in that spirit, in the interviewee's terms.
@@ -69,7 +69,8 @@ Judge each move by one question: did it get the interviewee to give specific fac
 
 ## Density and balance
 
-- About one note for every 4 to 6 turns. A 60 minute call usually gets 50 to 90 notes.
+- Count notes by talk time, not by turns. Turn length varies a lot between transcripts. Aim for about 1 note per minute of talk: a 30 minute call gets 25 to 45 notes, a 60 minute call gets 50 to 90.
+- Fewer notes are fine for small talk or logistics. Do not add notes to reach the number.
 - Cover every section. Do not stack many notes on one sentence; two notes on the same quote are fine when they show two types (for example `pain` and `play-missed`).
 - Be fair to the interviewer: record good moves with the same care as distortions.
 - Quotes: the shortest exact span that carries the point, usually 3 to 20 words. Copy them from turns.json, not from memory.

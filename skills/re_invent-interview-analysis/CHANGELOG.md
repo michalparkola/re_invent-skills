@@ -2,6 +2,11 @@
 
 Versions use the release date (YYYY-MM-DD). A second release on the same day adds `.2`, `.3` and so on. Add a new entry at the top for each change. Put the same date in the `metadata.version` field of `SKILL.md`.
 
+## 2026-11-12.6
+Clearer writing rules, found in a test on a fictional interview.
+- `taxonomy.md`: one density rule by talk time (about 1 note per minute). The rule by turns is gone, because it gave half the count.
+- `SKILL.md` edit pass: cut adverbs that add no fact, keep time, frequency and amount words. A fact can be the subject when no person acts. No fixed formula for evidence strength.
+
 ## 2026-11-12.5
 One template for the page.
 - `assets/report.html` holds the styles, the UI labels and the renderer. It replaces `assets/style.css`, `scripts/report.js` and the HTML code in `build_report.py`.
