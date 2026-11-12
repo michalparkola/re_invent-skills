@@ -1,6 +1,6 @@
 # Data format
 
-Two input files go into `scripts/build_report.py`.
+Two input files go into `scripts/build_report.py`. The script validates them and puts `{"turns": [...], "report": {...}}` into the `report-data` tag of `assets/report.html`. Without Python, you put the same object there yourself.
 
 ## turns.json
 

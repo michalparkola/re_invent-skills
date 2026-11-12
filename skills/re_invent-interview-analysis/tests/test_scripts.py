@@ -1,16 +1,41 @@
 #!/usr/bin/env python3
 """Tests for prepare_turns.py and build_report.py. Run: python3 tests/test_scripts.py"""
-import copy, json, re, subprocess, sys, tempfile, unittest
+import copy, json, re, shutil, subprocess, sys, tempfile, unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 FIX = ROOT / "tests" / "fixtures"
 PREP = ROOT / "scripts" / "prepare_turns.py"
 BUILD = ROOT / "scripts" / "build_report.py"
+TEMPLATE = ROOT / "assets" / "report.html"
+SLOT = '<script type="application/json" id="report-data">null</script>'
+HAS_NODE = shutil.which("node") is not None
 
 
 def run(*args):
     return subprocess.run([sys.executable, *map(str, args)], capture_output=True, text=True)
+
+
+def page_script(page):
+    """The renderer script of a page: the last <script> without a type."""
+    return re.findall(r"<script>(.*?)</script>", page, re.S)[-1]
+
+
+def page_data(page):
+    m = re.search(r'<script type="application/json" id="report-data">(.*?)</script>', page, re.S)
+    return json.loads(m.group(1))
+
+
+def render_js(page, data=None):
+    """Run the page's renderer in node. Returns {title, lang, store, html}."""
+    data = page_data(page) if data is None else data
+    code = ("const src=require('fs').readFileSync(0,'utf8');const {js,data}=JSON.parse(src);"
+            "const m={};new Function('module',js)(m);"
+            "process.stdout.write(JSON.stringify(m.exports.render(data)));")
+    r = subprocess.run(["node", "-e", code], input=json.dumps({"js": page_script(page), "data": data}),
+                       capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    return json.loads(r.stdout)
 
 
 class PrepareTurns(unittest.TestCase):
@@ -138,12 +163,18 @@ class BuildReport(unittest.TestCase):
         r = run(BUILD, "--turns", tp, "--report", rp, "--out", out)
         return r, out
 
+    def rendered(self, out):
+        if not HAS_NODE:
+            self.skipTest("node not installed")
+        return render_js(out.read_text())
+
     def test_valid_report_builds_one_tabbed_page(self):
         r, out = self.build()
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        html = out.read_text()
-        self.assertIn('<html lang="pl">', html)
-        self.assertIn("<title>Jan, wywiad 1</title>", html)
+        res = self.rendered(out)
+        self.assertEqual(res["lang"], "pl")
+        self.assertEqual(res["title"], "Jan, wywiad 1")
+        html = res["html"]
         for tab in ["overview", "transcript", "themes", "findings"]:
             self.assertIn(f'id="tab-{tab}"', html)
         self.assertEqual(html.count("<aside class=\"note\""), 7)
@@ -161,7 +192,7 @@ class BuildReport(unittest.TestCase):
     def test_english_labels(self):
         r, out = self.build(lambda rep: rep["meta"].update(lang="en"))
         self.assertEqual(r.returncode, 0, r.stdout)
-        self.assertIn("Missed opportunity", out.read_text())
+        self.assertIn("Missed opportunity", self.rendered(out)["html"])
 
     def fails_with(self, mutate, needle):
         r, out = self.build(mutate)
@@ -220,7 +251,7 @@ class BuildReport(unittest.TestCase):
             t["ts"] = ""
         r, out = self.build(turns=turns)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        html = out.read_text()
+        html = self.rendered(out)["html"]
         self.assertNotIn('class="ts"', html)
         self.assertNotIn(" · </div>", html)
 
@@ -228,7 +259,7 @@ class BuildReport(unittest.TestCase):
 
     # Refactoring UI checks
     def css(self):
-        return (ROOT / "assets" / "style.css").read_text()
+        return re.search(r"<style>(.*?)</style>", TEMPLATE.read_text(), re.S).group(1)
 
     def rule(self, selector):
         m = re.search(r"(?:^|[}\n])" + re.escape(selector) + r"\{([^}]*)\}", self.css())
@@ -267,7 +298,7 @@ class BuildReport(unittest.TestCase):
                 q["sources"] = [x for x in q.get("sources", []) if x != sid]
         r, out = self.build(m)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        html = out.read_text()
+        html = self.rendered(out)["html"]
         self.assertIn('<div class="stat zero" data-type="signal">', html)
         self.assertIn('<div class="stat" data-type="job">', html)
         self.assertIn(".stat.zero", self.css())
@@ -278,8 +309,48 @@ class BuildReport(unittest.TestCase):
         self.assertIsNotNone(m)
         self.assertIn(".tabs .wrap{flex-wrap:wrap", m.group(1))
         self.assertIn(".bar{top:var(--tabs-h", css)
-        js = (ROOT / "scripts" / "report.js").read_text()
+        js = page_script(TEMPLATE.read_text())
         self.assertIn("--tabs-h", js)
+
+class Template(unittest.TestCase):
+    """One template renders the page, with or without the build script."""
+
+    def test_single_source(self):
+        page = TEMPLATE.read_text()
+        self.assertEqual(page.count(SLOT), 1)
+        self.assertFalse((ROOT / "assets" / "style.css").exists())
+        self.assertFalse((ROOT / "scripts" / "report.js").exists())
+
+    def test_build_puts_data_in_template(self):
+        rep = json.loads((FIX / "report.json").read_text())
+        rep["summary"]["headline"] = "Jan </script><b>płaci</b>"
+        d = Path(tempfile.mkdtemp())
+        (d / "r.json").write_text(json.dumps(rep, ensure_ascii=False))
+        r = run(BUILD, "--turns", FIX / "turns.json", "--report", d / "r.json", "--out", d / "o.html")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        page = (d / "o.html").read_text()
+        self.assertNotIn("</script><b>", page)
+        self.assertEqual(page_data(page)["report"]["summary"]["headline"], "Jan </script><b>płaci</b>")
+        self.assertEqual(page.replace(re.search(r'id="report-data">(.*?)</script>', page, re.S).group(1), "null"),
+                         TEMPLATE.read_text())
+        if HAS_NODE:
+            self.assertIn("Jan &lt;/script&gt;&lt;b&gt;płaci", render_js(page)["html"])
+
+    @unittest.skipUnless(HAS_NODE, "node not installed")
+    def test_renderer_flags_bad_quote_without_script(self):
+        data = {"turns": json.loads((FIX / "turns.json").read_text()),
+                "report": json.loads((FIX / "report.json").read_text())}
+        data["report"]["notes"][1]["quote"] = "siedziałem trzy noce"
+        html = render_js(TEMPLATE.read_text(), data)["html"]
+        self.assertIn('class="problems"', html)
+        self.assertIn("siedziałem trzy noce", html)
+        self.assertEqual(html.count('<aside class="note"'), 6)
+
+    @unittest.skipUnless(HAS_NODE, "node not installed")
+    def test_empty_template_explains_itself(self):
+        html = render_js(TEMPLATE.read_text(), None)["html"]
+        self.assertIn("report-data", html)
+
 
 if __name__ == "__main__":
     unittest.main()

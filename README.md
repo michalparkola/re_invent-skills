@@ -28,7 +28,7 @@ git clone https://github.com/michalparkola/re_invent-skills.git ~/Projects/re_in
 ln -s ~/Projects/re_invent-skills/skills/re_invent-interview-analysis ~/.claude/skills/re_invent-interview-analysis
 ```
 
-Skrypty wymagają tylko Pythona 3 (biblioteka standardowa).
+Skrypty wymagają tylko Pythona 3 (biblioteka standardowa). Bez Pythona agent wypełnia ten sam szablon `assets/report.html` danymi JSON. Strona sama pokazuje cytaty, które nie pasują do transkryptu.
 
 #### Użycie
 
@@ -40,7 +40,7 @@ Agent:
 
 1. Zamienia transkrypt na tury (`scripts/prepare_turns.py`). Obsługuje SRT i VTT z imionami mówców (Zoom, Teams, Meet, MacWhisper), eksporty Otter i Fireflies, linie `Imię: tekst`, nagłówki `**HH:MM:SS — Imię**` i segmenty JSON. Inne formaty opisuje `references/input-formats.md`. Znaczniki czasu są opcjonalne.
 2. Czyta całą rozmowę, dzieli ją na tematy i pisze notatki z cytatami.
-3. Buduje raport (`scripts/build_report.py`) i sprawdza, czy każdy cytat pasuje do transkryptu.
+3. Buduje raport (`scripts/build_report.py`): sprawdza, czy każdy cytat pasuje do transkryptu, i wstawia dane do szablonu `assets/report.html`.
 
 Wynik: plik `report.html` w folderze roboczym. Otwórz go w przeglądarce.
 
@@ -52,4 +52,4 @@ python3 -m unittest discover -s skills/re_invent-interview-analysis/tests
 
 #### Wersje
 
-Wersja to data wydania (`2026-11-12.4`). Historia zmian: [CHANGELOG.md](skills/re_invent-interview-analysis/CHANGELOG.md).
+Wersja to data wydania (`2026-11-12.5`). Historia zmian: [CHANGELOG.md](skills/re_invent-interview-analysis/CHANGELOG.md).

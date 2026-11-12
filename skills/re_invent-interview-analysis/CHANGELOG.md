@@ -2,6 +2,13 @@
 
 Versions use the release date (YYYY-MM-DD). A second release on the same day adds `.2`, `.3` and so on. Add a new entry at the top for each change. Put the same date in the `metadata.version` field of `SKILL.md`.
 
+## 2026-11-12.5
+One template for the page.
+- `assets/report.html` holds the styles, the UI labels and the renderer. It replaces `assets/style.css`, `scripts/report.js` and the HTML code in `build_report.py`.
+- `build_report.py` validates the data and puts it into the template.
+- Without Python, an agent fills the same template. The page shows quotes that do not match the transcript and hides those notes.
+- 35 tests. The renderer tests run in Node.js and skip without it.
+
 ## 2026-11-12.4
 More input formats.
 - `prepare_turns.py` reads SRT and WebVTT with speaker names (Zoom, Teams, Meet, Whisper tools) and header blocks with a name and a time on one line (Otter, Fireflies, tl;dv).

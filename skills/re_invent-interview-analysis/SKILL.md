@@ -2,12 +2,12 @@
 name: re_invent-interview-analysis
 description: Turn a discovery interview transcript into a self-contained HTML report. The report has a transcript split into topic chunks, margin notes linked to exact quotes (jobs, pains, workarounds, signals; the interviewer's good moves, distortions and missed follow-ups), notes grouped by theme, and findings with hypotheses and next questions. The method draws on The Mom Test, Jobs to be Done and Clean Language. Use when the user asks to analyze, review or annotate a discovery interview, customer interview, user research call, sales discovery call or problem interview. Polish triggers include "przeanalizuj rozmowę", "analiza wywiadu" and "raport z rozmowy odkrywczej".
 metadata:
-  version: "2026-11-12.4"
+  version: "2026-11-12.5"
 ---
 
 # Discovery interview report
 
-Version 2026-11-12.4. See `CHANGELOG.md`.
+Version 2026-11-12.5. See `CHANGELOG.md`.
 
 The output is one self-contained HTML page with four tabs:
 
@@ -65,7 +65,17 @@ Do the work in this order. Long calls can go section by section.
 ```bash
 python3 <skill>/scripts/build_report.py --turns turns.json --report report.json --out "<Title>.html"
 ```
-The script lists every problem and writes nothing until all checks pass. Fix the data. Do not loosen the checks.
+The script lists every problem and writes nothing until all checks pass. Fix the data. Do not loosen the checks. Then it copies `assets/report.html` with the data in it.
+
+#### Without Python
+Use this mode when you cannot run scripts. The template gives the same page.
+1. Write turns.json by hand from the transcript. Copy the wording exactly. Use the turn format in `references/data-format.md`.
+2. Copy `assets/report.html` to `<Title>.html`.
+3. Replace `null` in `<script type="application/json" id="report-data">null</script>` with `{"turns": [...], "report": {...}}`. Write `<` in the JSON as `\u003c`.
+4. Open the page. The page shows a red box when a quote does not match its turn, a turn is missing or a note type is wrong. It hides those notes. Fix the data until the box goes away.
+The page does not do the other checks of the script (groups, roles, statuses, em dashes). Check them yourself against `references/data-format.md`.
+
+If you cannot write files at all, give the report as Markdown in the chat: summary, sections with notes and quotes, groups, findings.
 
 ### 6. Edit pass on all generated copy
 Apply this to the headings, summaries, notes, groups and findings. Do not apply it to the transcript or the quotes. Check that:
@@ -99,7 +109,8 @@ let ov=0;for(let i=1;i<ns.length;i++)if(ns[i].top<ns[i-1].bottom-0.5)ov++;
 ## Files
 - `scripts/prepare_turns.py`: transcript (SRT, WebVTT, header blocks, markdown headings, plain lines or JSON segments) to turns.json.
 - `references/input-formats.md`: the input formats with samples, and how to convert other formats.
-- `scripts/build_report.py`: validates the data and writes the page. It inlines `assets/style.css` and `scripts/report.js`.
+- `assets/report.html`: the report template. It holds the styles, the UI labels and the renderer. It is the only source of the page look.
+- `scripts/build_report.py`: validates the data and puts it into the template.
 - `references/taxonomy.md`: the note types and the judgment rules.
 - `references/data-format.md`: the report.json contract and the checks.
-- `tests/test_scripts.py`: run `python3 tests/test_scripts.py` after you change a script.
+- `tests/test_scripts.py`: run `python3 tests/test_scripts.py` after you change a script or the template. The renderer tests need Node.js and skip without it.
