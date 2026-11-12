@@ -24,7 +24,7 @@ Raport działa offline i zostaje na Twoim dysku. Skill nie pobiera danych z inny
 #### Instalacja
 
 ```bash
-git clone <adres repo> ~/Projects/re_invent-skills
+git clone https://github.com/michalparkola/re_invent-skills.git ~/Projects/re_invent-skills
 ln -s ~/Projects/re_invent-skills/skills/re_invent-interview-analysis ~/.claude/skills/re_invent-interview-analysis
 ```
 
