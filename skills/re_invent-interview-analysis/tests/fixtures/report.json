@@ -1,0 +1,50 @@
+{
+ "meta": {
+  "title": "Jan, wywiad 1",
+  "eyebrow": "Discovery · księgowość",
+  "date": "12 listopada 2026",
+  "duration_min": 1,
+  "lang": "pl",
+  "speakers": {
+   "A": {"name": "Anna", "role": "interviewer"},
+   "J": {"name": "Jan", "role": "interviewee"}
+  }
+ },
+ "summary": {
+  "headline": "Jan płaci już 800 zł za ręczne zamknięcie miesiąca",
+  "points": ["Jan spędził trzy noce nad marcowym zamknięciem."]
+ },
+ "sections": [
+  {"start": "t1", "title": "Powitanie", "summary": "Anna sprawdza dźwięk."},
+  {"start": "t3", "title": "Jan paruje faktury ręcznie w Excelu", "summary": "Anna pyta o ostatni raz."}
+ ],
+ "notes": [
+  {"id": "n1", "type": "play-good", "turn": "t3", "quote": "Opowiedz o ostatnim razie", "title": "Pytanie o konkretną przeszłość", "text": "Anna pyta o ostatni raz, więc Jan opisuje fakty."},
+  {"id": "n2", "type": "pain", "turn": "t4", "quote": "siedziałem nad tym trzy noce", "title": "Trzy noce na zamknięcie", "text": "Jan podaje koszt w czasie."},
+  {"id": "n3", "type": "workaround", "turn": "t4", "quote": "Eksportuję wszystko do Excela", "title": "Excel i ręczne parowanie", "text": "Jan łączy faktury ręcznie."},
+  {"id": "n4", "type": "play-distort", "turn": "t5", "quote": "gdyby było narzędzie", "title": "Pytanie hipotetyczne z pitchem", "text": "Anna opisuje swoje rozwiązanie i pyta o przyszłość."},
+  {"id": "n5", "type": "signal", "turn": "t6", "quote": "Zapłaciłem już księgowej dodatkowe 800 zł", "title": "Jan już płaci za problem", "text": "Wydane pieniądze mówią więcej niż deklaracja zakupu."},
+  {"id": "n6", "type": "play-missed", "turn": "t6", "quote": "Pewnie tak.", "title": "Brak dopytania o 800 zł", "text": "Anna mogła zapytać, kiedy i dlaczego Jan zapłacił."},
+  {"id": "n7", "type": "job", "turn": "t4", "quote": "paruję faktury", "title": "Zamknąć miesiąc bez nocnej pracy", "text": "Jan chce sparować faktury przed terminem."}
+ ],
+ "groups": {
+  "headline": "Jan ma płatny problem z zamknięciem miesiąca",
+  "parts": [
+   {"id": "interviewee", "title": "Jan", "intro": "Zadania, problemy, rozwiązania, sygnały.",
+    "groups": [{"title": "Zamknięcie miesiąca kosztuje Jana noce i 800 zł", "notes": ["n7", "n2", "n3", "n5"]}]},
+   {"id": "interviewer", "title": "Prowadzenie wywiadu", "intro": "Ruchy Anny.",
+    "groups": [{"title": "Anna zaczęła od przeszłości, potem przeszła do pitchu", "notes": ["n1", "n4", "n6"]}]}
+  ]
+ },
+ "findings": {
+  "headline": "Hipoteza o płatnym problemie ma jeden twardy dowód",
+  "hypotheses": [
+   {"claim": "Księgowi płacą za szybsze zamknięcie miesiąca", "status": "supported", "evidence": ["n5"], "comment": "Jeden przypadek."},
+   {"claim": "Jan kupi narzędzie", "status": "open", "evidence": ["n4"], "comment": "Deklaracja z pytania hipotetycznego."}
+  ],
+  "next_questions": [
+   {"question": "Kiedy ostatnio zapłaciłeś komuś za pomoc przy zamknięciu?", "why": "Sprawdza, czy płatność się powtarza.", "sources": ["n5"]}
+  ],
+  "caveat": "Jeden wywiad."
+ }
+}

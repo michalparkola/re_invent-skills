@@ -1,0 +1,8 @@
+[
+ {"id": "t1", "sp": "A", "ts": "00:00:05", "text": "Cześć, słychać mnie?"},
+ {"id": "t2", "sp": "J", "ts": "00:00:07", "text": "Tak. Słychać dobrze."},
+ {"id": "t3", "sp": "A", "ts": "00:00:12", "text": "Opowiedz o ostatnim razie, kiedy zamykałeś miesiąc."},
+ {"id": "t4", "sp": "J", "ts": "00:00:20", "text": "W marcu siedziałem nad tym trzy noce. Eksportuję wszystko do Excela i ręcznie paruję faktury."},
+ {"id": "t5", "sp": "A", "ts": "00:00:41", "text": "A gdyby było narzędzie, które robi to za ciebie, kupiłbyś je?"},
+ {"id": "t6", "sp": "J", "ts": "00:00:46", "text": "Pewnie tak. Zapłaciłem już księgowej dodatkowe 800 zł za pomoc."}
+]
