@@ -2,6 +2,13 @@
 
 Versions use the release date (YYYY-MM-DD). A second release on the same day adds `.2`, `.3` and so on. Add a new entry at the top for each change. Put the same date in the `metadata.version` field of `SKILL.md`.
 
+## 2026-11-12.4
+More input formats.
+- `prepare_turns.py` reads SRT and WebVTT with speaker names (Zoom, Teams, Meet, Whisper tools) and header blocks with a name and a time on one line (Otter, Fireflies, tl;dv).
+- Subtitles without speaker names fail with advice. An unknown format fails with the list of formats.
+- New `references/input-formats.md`: samples for each format and how to convert DOCX, PDF and tables.
+- 31 tests.
+
 ## 2026-11-12.3
 Mobile tab bar fix.
 - Under 500 px the tabs wrap to 2 rows. All 4 tabs show without a sideways scroll.

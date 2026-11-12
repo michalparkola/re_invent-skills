@@ -6,9 +6,18 @@ Input formats (detected in this order):
     first list value is that list. "start" is seconds (number) or "H:MM:SS".
   - Markdown headings, text below each one:
         **00:00:44 — Full Name**
+  - WebVTT (Zoom, Teams, Meet): speaker in <v Name> tags or "Name:" at the cue start.
+  - SRT (Whisper tools, Descript): speaker as "Name:" or "[Name]" at the cue start.
+    A cue without a speaker continues the previous turn. Subtitles with no
+    speakers at all are refused with advice.
+  - Header blocks (Otter, Fireflies, tl;dv): a line with a name and a time,
+    the text on the next lines:
+        Anna Nowak  0:03       Anna Nowak - 00:03       00:00:03 Anna Nowak
   - Plain lines "Name: text", with an optional timestamp before the name:
         [00:00:44] Name: text      00:00:44 - Name: text      Name: text
     A line without "Name:" continues the previous turn.
+
+See references/input-formats.md for other formats.
 
 Timestamps are optional; turns without one get ts "". Consecutive blocks of one
 speaker merge into one turn. Wording stays as it is; only whitespace and stray
@@ -26,9 +35,19 @@ CLOCK = r"\d{1,2}:\d{2}(?::\d{2})?"
 MD_HEAD = re.compile(rf"^\*\*({CLOCK})\s*[—–-]\s*(.+?)\*\*\s*$", re.M)
 LINE = re.compile(rf"^\s*(?:[\[(]?({CLOCK})[\])]?\s*[—–-]?\s*)?"
                   r"([^\W\d][\w.'’ -]{0,40}?)\s*:\s+(.*\S)\s*$")
-HINT = ("No speakers found. Give the transcript as '**HH:MM:SS — Name**' headings, "
-        "'Name: text' lines (optional timestamp first), or a JSON list of "
-        "{speaker, text, start} segments.")
+NAME = r"[^\W\d][\w.'’-]*(?: [^\W\d][\w.'’-]*){0,3}"
+HEAD_LINE = re.compile(rf"^\s*(?:\[?({CLOCK})\]?\s*[—–|-]?\s*({NAME})|({NAME})(?:\s*[—–|-]\s*|\s+)[\[(]?({CLOCK})[\])]?)\s*$")
+CUE_TIME = re.compile(r"^\s*((?:\d+:)?\d{1,2}:\d{2})[.,]\d+\s*-->")
+VOICE = re.compile(r"<v(?:\.[^\s>]*)?\s+([^>]+)>")
+CUE_SPEAKER = re.compile(r"^\s*(?:\[([^\]]{1,40})\]:?|([^\W\d][\w.'’ -]{0,40}?)\s*:)\s+(.*)$", re.S)
+HINT = ("No speakers found. Supported: '**HH:MM:SS — Name**' headings, "
+        "'Name: text' lines (optional timestamp first), 'Name  0:03' header lines "
+        "with text below, SRT or WebVTT with speaker names, or a JSON list of "
+        "{speaker, text, start} segments. To convert other formats, see "
+        "references/input-formats.md.")
+NO_SPEAKERS = ("The subtitles have timestamps but no speaker names. The analysis needs "
+               "to know who said what. Export again with speaker labels (diarization), "
+               "or add 'Name:' at the start of each cue. See references/input-formats.md.")
 
 
 def norm_ts(ts):
@@ -71,6 +90,46 @@ def read_lines(raw):
     return blocks
 
 
+def cues(raw):
+    """Yield (start clock, text) for each SRT or VTT cue."""
+    for chunk in re.split(r"\n\s*\n", raw.replace("\r\n", "\n")):
+        lines = chunk.strip().split("\n")
+        i = next((k for k, l in enumerate(lines) if CUE_TIME.match(l)), None)
+        if i is None:
+            continue
+        yield CUE_TIME.match(lines[i]).group(1), "\n".join(lines[i + 1:])
+
+
+def read_subtitles(raw):
+    blocks, named = [], False
+    for clock, text in cues(raw):
+        ts = norm_ts(clock)
+        parts = VOICE.split(text)
+        if len(parts) > 1:
+            pairs = list(zip(parts[1::2], parts[2::2]))
+        else:
+            m = CUE_SPEAKER.match(text)
+            pairs = [((m.group(1) or m.group(2)), m.group(3))] if m else [("Unassigned", text)]
+        for name, body in pairs:
+            body = re.sub(r"<[^>]+>", "", body).replace("\n", " ")
+            named = named or name != "Unassigned"
+            blocks.append((name.strip(), ts, body))
+    if blocks and not named:
+        sys.exit(NO_SPEAKERS)
+    return blocks
+
+
+def read_header_blocks(raw, heads):
+    blocks = []
+    for line in raw.splitlines():
+        m = HEAD_LINE.match(line)
+        if m:
+            blocks.append(((m.group(2) or m.group(3)).strip(), norm_ts(m.group(1) or m.group(4)), ""))
+        elif line.strip() and blocks:
+            blocks[-1] = (blocks[-1][0], blocks[-1][1], blocks[-1][2] + " " + line)
+    return blocks
+
+
 def read_blocks(path):
     raw = Path(path).read_text()
     if raw.lstrip()[:1] in "[{":
@@ -79,7 +138,14 @@ def read_blocks(path):
         except (json.JSONDecodeError, AttributeError):
             pass
     heads = list(MD_HEAD.finditer(raw))
-    blocks = read_markdown(raw, heads) if heads else read_lines(raw)
+    if raw.lstrip().startswith("WEBVTT") or any(CUE_TIME.match(l) for l in raw.splitlines()):
+        blocks = read_subtitles(raw)
+    elif heads:
+        blocks = read_markdown(raw, heads)
+    elif sum(1 for l in raw.splitlines() if HEAD_LINE.match(l)) >= 2:
+        blocks = read_header_blocks(raw, heads)
+    else:
+        blocks = read_lines(raw)
     if not blocks:
         sys.exit(HINT)
     return blocks

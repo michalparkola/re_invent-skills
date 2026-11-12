@@ -2,12 +2,12 @@
 name: re_invent-interview-analysis
 description: Turn a discovery interview transcript into a self-contained HTML report. The report has a transcript split into topic chunks, margin notes linked to exact quotes (jobs, pains, workarounds, signals; the interviewer's good moves, distortions and missed follow-ups), notes grouped by theme, and findings with hypotheses and next questions. The method draws on The Mom Test, Jobs to be Done and Clean Language. Use when the user asks to analyze, review or annotate a discovery interview, customer interview, user research call, sales discovery call or problem interview. Polish triggers include "przeanalizuj rozmowę", "analiza wywiadu" and "raport z rozmowy odkrywczej".
 metadata:
-  version: "2026-11-12.3"
+  version: "2026-11-12.4"
 ---
 
 # Discovery interview report
 
-Version 2026-11-12.3. See `CHANGELOG.md`.
+Version 2026-11-12.4. See `CHANGELOG.md`.
 
 The output is one self-contained HTML page with four tabs:
 
@@ -24,11 +24,13 @@ Read `references/taxonomy.md` before you write notes. Read `references/data-form
 
 ### 1. Take the transcript and context
 - Input: a transcript the user or the calling agent gives you. Do not fetch it from other systems.
-- Formats that `prepare_turns.py` reads:
-  - Plain lines `Name: text`, with an optional timestamp before the name (`[00:01:05] Name: text`). A line without `Name:` continues the previous turn.
+- `prepare_turns.py` reads these formats and detects the format itself:
+  - SRT or WebVTT subtitles with speaker names (Zoom, Teams, Meet, Whisper tools).
+  - Header blocks: a line with a name and a time, the text below (Otter, Fireflies, tl;dv).
   - Markdown headings `**HH:MM:SS — Name**` with the text below each one.
-  - A JSON list of segments `{"speaker", "text", "start"}`. `start` is seconds or `H:MM:SS` and is optional.
-- Convert any other format to plain `Name: text` lines first. Timestamps are optional.
+  - Plain lines `Name: text`, with an optional timestamp before the name.
+  - A JSON list of segments `{"speaker", "text", "start"}`.
+- If the script refuses the input, read `references/input-formats.md`. It shows each format and how to convert others (DOCX, PDF, tables, subtitles without speakers).
 - Establish who is the interviewer and who is the interviewee. Use the context you have or the content. Ask the user only if it is unclear.
 - Find the goal of the interview and the hypotheses it tested. Take them from the user's message or the call opening. If none are stated, infer them from the interviewer's questions and say so in the findings caveat.
 - Put the work files where the user's or project's rules say. Otherwise, use a new folder next to the transcript.
@@ -95,7 +97,8 @@ let ov=0;for(let i=1;i<ns.length;i++)if(ns[i].top<ns[i-1].bottom-0.5)ov++;
   - Which hypotheses changed status.
 
 ## Files
-- `scripts/prepare_turns.py`: transcript (plain lines, markdown headings or JSON segments) to turns.json.
+- `scripts/prepare_turns.py`: transcript (SRT, WebVTT, header blocks, markdown headings, plain lines or JSON segments) to turns.json.
+- `references/input-formats.md`: the input formats with samples, and how to convert other formats.
 - `scripts/build_report.py`: validates the data and writes the page. It inlines `assets/style.css` and `scripts/report.js`.
 - `references/taxonomy.md`: the note types and the judgment rules.
 - `references/data-format.md`: the report.json contract and the checks.

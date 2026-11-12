@@ -75,6 +75,53 @@ class PrepareTurns(unittest.TestCase):
         r = run(PREP, p, d / "o.json")
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("Name:", r.stdout + r.stderr)
+        self.assertIn("input-formats.md", r.stdout + r.stderr)
+
+    def rows(self, turns):
+        return [(t["sp"], t["ts"], t["text"]) for t in turns]
+
+    def test_srt_with_name_prefix_or_brackets(self):
+        srt = ("1\n00:00:01,400 --> 00:00:04,000\nAnna: Opowiedz o ostatnim\nzamknięciu miesiąca.\n\n"
+               "2\n00:00:05,000 --> 00:00:07,000\n[Jan] W marcu.\n\n"
+               "3\n00:00:07,500 --> 00:00:09,000\nTrwało tydzień.\n\n"
+               "4\n00:01:05,000 --> 00:01:07,000\n[Anna]: Ile dni?\n")
+        self.assertEqual(self.rows(self.prep("t.srt", srt)), [
+            ("A", "00:00:01", "Opowiedz o ostatnim zamknięciu miesiąca."),
+            ("J", "00:00:05", "W marcu. Trwało tydzień."),
+            ("A", "00:01:05", "Ile dni?")])
+
+    def test_vtt_voice_tags(self):
+        vtt = ("WEBVTT\n\nNOTE exported by a meeting tool\n\n"
+               "3f2a-1\n00:03.000 --> 00:05.200\n<v Anna Nowak>Opowiedz o <c>marcu</c>.</v>\n\n"
+               "3f2a-2\n00:06.000 --> 00:08.000 align:start\n<v.loud Jan Kowalski>Trzy noce.</v>\n\n"
+               "3f2a-3\n01:00:01.000 --> 01:00:03.000\n<v Jan Kowalski>W Excelu.</v>\n")
+        self.assertEqual(self.rows(self.prep("t.vtt", vtt)), [
+            ("A", "00:00:03", "Opowiedz o marcu."),
+            ("J", "00:00:06", "Trzy noce. W Excelu.")])
+
+    def test_vtt_name_prefix(self):
+        vtt = ("WEBVTT\n\n1\n00:00:02.100 --> 00:00:04.000\nAnna Nowak: Jak to wyglądało?\n\n"
+               "2\n00:00:05.000 --> 00:00:06.000\nJan Kowalski: Ręcznie.\n")
+        self.assertEqual(self.rows(self.prep("t.vtt", vtt)), [
+            ("A", "00:00:02", "Jak to wyglądało?"), ("J", "00:00:05", "Ręcznie.")])
+
+    def test_name_and_time_header_blocks(self):
+        txt = ("Anna Nowak  0:03\nOpowiedz o marcu.\n\n"
+               "Jan Kowalski - 00:09\nTrzy noce.\nW Excelu.\n\n"
+               "00:01:05 Anna Nowak\nIle dni?\n")
+        self.assertEqual(self.rows(self.prep("t.txt", txt)), [
+            ("A", "00:00:03", "Opowiedz o marcu."),
+            ("J", "00:00:09", "Trzy noce. W Excelu."),
+            ("A", "00:01:05", "Ile dni?")])
+
+    def test_subtitles_without_speakers_fail_with_advice(self):
+        d = Path(tempfile.mkdtemp()); p = d / "t.srt"
+        p.write_text("1\n00:00:01,000 --> 00:00:03,000\nOpowiedz o marcu.\n\n2\n00:00:04,000 --> 00:00:05,000\nTrzy noce.\n")
+        r = run(PREP, p, d / "o.json")
+        self.assertNotEqual(r.returncode, 0)
+        msg = r.stdout + r.stderr
+        self.assertIn("speaker", msg.lower())
+        self.assertIn("input-formats.md", msg)
 
 
 class BuildReport(unittest.TestCase):
